@@ -1,31 +1,5 @@
 # kubernetes-on-mac
 
-# Requirements
-
-Minikube requires that VT-x/AMD-v virtualization is enabled in BIOS. To check that this is enabled on OSX / macOS run:
-
-    sysctl -a | grep machdep.cpu.features | grep VMX
-
-If there's output, you're good!
-
-# Prerequisites
-
-- kubectl
-- docker (for Mac)
-- minikube
-- virtualbox
-
-```
-brew update && brew install kubectl && brew cask install docker minikube virtualbox
-```
-
-# Verify
-
-    docker --version                # Docker version 17.09.0-ce, build afdb6d4
-    docker-compose --version        # docker-compose version 1.16.1, build 6d1ac21
-    docker-machine --version        # docker-machine version 0.12.2, build 9371605
-    minikube version                # minikube version: v0.22.3
-    kubectl version --client        # Client Version: version.Info{Major:"1", Minor:"8", GitVersion:"v1.8.1", GitCommit:"f38e43b221d08850172a9a4ea785a86a3ffa3b3a", GitTreeState:"clean", BuildDate:"2017-10-12T00:45:05Z", GoVersion:"go1.9.1", Compiler:"gc", Platform:"darwin/amd64"}      
     
 # Start
 
@@ -50,12 +24,7 @@ Should output something like:
 # Use minikube's built-in docker daemon:
 
     eval $(minikube docker-env)
-    
-Add this line to `.bash_profile` or `.zshrc` or ... if you want to use minikube's daemon by default (or if you do not want to set this every time you open a new terminal).
 
-You can revert back to the host docker daemon by running:
-
-    eval $(docker-machine env -u)
     
 If you now run `docker ps`, it should now output something like:
 
@@ -71,24 +40,34 @@ First setup a local registry, so Kubernetes can pull the image(s) from there:
 
     docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
-## Build
+## Build Containers
 
-First of, store all files (Dockerfile, my-app.yml, index.html) in this gist locally in some new (empty) directory.
+Build `container-1` by running:
 
-You can build the Dockerfile below locally if you want to follow this guide to the letter. Store the Dockerfile locally, preferably in an empty directory and run:
+    cd container-1
 
-    docker build . --tag my-app
+    docker build . --tag my-app-1
     
 You should now have an image named 'my-app' locally, check by using `docker images` (or your own image of course). You can then publish it to your local docker registry:
 
-    docker tag my-app localhost:5000/my-app:0.1.0
+    docker tag my-app-1 localhost:5000/my-app-1:0.1.3
+
+Similarly build `container-2` by running:
+
+    cd container-2
+
+    docker build . --tag my-app-2
+
+    docker tag my-app-2 localhost:5000/my-app-2:0.1.3
+
     
 Running `docker images` should now output the following:
 
 ```
 REPOSITORY                                             TAG                 IMAGE ID            CREATED             SIZE
 my-app                                                 latest              cc949ad8c8d3        44 seconds ago      89.3MB
-localhost:5000/my-app                                  0.1.0               cc949ad8c8d3        44 seconds ago      89.3MB
+localhost:5000/my-app-1                                0.1.3               cc949ad8c8d3        44 seconds ago      89.3MB
+localhost:5000/my-app-2                                0.1.3               abc49ad17ade        44 seconds ago      89.3MB
 httpd                                                  2.4-alpine          fe26194c0b94        7 days ago          89.3MB
 ```
 
@@ -96,38 +75,20 @@ httpd                                                  2.4-alpine          fe261
 
 Store the file below `my-app.yml` on your system and run the following:
 
-    kubectl create -f my-app.yml
+    kubectl create -f my-k8.yml
     
 You should now see your pod and your service:
 
     kubectl get all
 
-The configuration exposes `my-app` outside of the cluster, you can get the address to access it by running:
+The configuration exposes `my-k8` outside of the cluster, you can get the address to access it by running:
 
-    minikube service my-app --url
+    minikube service my-k8 --url
     
-This should give an output like `http://192.168.99.100:30304` (the port will most likely differ). Go there with your favorite browser, you should see "Hello world!". You just accessed your application from outside of your local Kubernetes cluster!
-    
-# Kubernetes GUI
+This should give an output like:
 
-    minikube dashboard
-    
-# Delete deployment of my-app
+    http://192.168.99.100:30303
+    http://192.168.99.100:30304
 
-    kubectl delete deploy my-app
-    kubectl delete service my-app
-    
-You're now good to go and deploy other images!
-
-# Reset everything
-
-    minikube stop;
-    minikube delete;
-    rm -rf ~/.minikube ~/.kube;
-    brew uninstall kubectl;
-    brew cask uninstall docker virtualbox minikube;
-
-# Credit
-
-Forked from https://gist.github.com/kevin-smets/b91a34cea662d0c523968472a81788f7
+allowing you to access it on your browser.
 

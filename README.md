@@ -71,11 +71,9 @@ First setup a local registry, so Kubernetes can pull the image(s) from there:
 
     docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
-## Build
+## Build single-container-example
 
-First of, store all files (Dockerfile, my-app.yml, index.html) in this gist locally in some new (empty) directory.
-
-You can build the Dockerfile below locally if you want to follow this guide to the letter. Store the Dockerfile locally, preferably in an empty directory and run:
+    cd single-container-example
 
     docker build . --tag my-app
     
