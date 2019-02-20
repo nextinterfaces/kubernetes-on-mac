@@ -1,4 +1,4 @@
-# kubernetes-on-mac
+# Orchestrating two containers
 
     
 # Start
